@@ -1,5 +1,7 @@
 package com.ecommerce.backend.domain.user;
 
+import com.ecommerce.backend.domain.user.dto.LoginRequest;
+import com.ecommerce.backend.domain.user.dto.LoginResponse;
 import com.ecommerce.backend.domain.user.dto.RegisterRequest;
 import com.ecommerce.backend.domain.user.dto.UserResponse;
 import jakarta.validation.Valid;
@@ -21,5 +23,12 @@ public class UserController {
     ) {
         UserResponse response = userService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(
+            @Valid @RequestBody LoginRequest request) {
+        LoginResponse response = userService.login(request);
+        return ResponseEntity.ok(response);
     }
 }
