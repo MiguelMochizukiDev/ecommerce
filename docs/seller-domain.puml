@@ -1,0 +1,41 @@
+@startuml seller-domain.puml
+
+skinparam classAttributeIconSize 0
+
+package "domain.seller" {
+
+    enum PaymentMethod {
+        DINHEIRO
+        DEBITO
+        CREDITO
+        PIX
+    }
+
+    class SellerProfile {
+        id : Long
+        storeName : String
+        description : String
+        pixKey : String
+        paymentMethods : Set<PaymentMethod>
+        active : boolean
+        createdAt : LocalDateTime
+    }
+
+    class SellerRequest <<record>> {
+        storeName : String
+        description : String
+        paymentMethods : Set<PaymentMethod>
+        pixKey : String
+    }
+
+    class SellerResponse <<record>> {
+        id : Long
+        storeName : String
+        paymentMethods : Set<PaymentMethod>
+        active : boolean
+    }
+}
+
+SellerProfile --> PaymentMethod
+
+@enduml

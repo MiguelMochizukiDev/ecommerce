@@ -1,0 +1,55 @@
+@startuml user-domain.puml
+
+skinparam classAttributeIconSize 0
+
+package "domain.user" {
+
+    enum Role {
+        BUYER
+        SELLER
+        ADMIN
+    }
+
+    class User {
+        id : Long
+        name : String
+        email : String
+        password : String
+        cpf : String
+        phone : String
+        roles : Set<Role>
+        active : boolean
+        createdAt : LocalDateTime
+    }
+
+    class RegisterRequest <<record>> {
+        name : String
+        email : String
+        password : String
+        cpf : String
+        phone : String
+    }
+
+    class LoginRequest <<record>> {
+        email : String
+        password : String
+    }
+
+    class UserResponse <<record>> {
+        id : Long
+        name : String
+        email : String
+        cpf : String
+        phone : String
+        roles : Set<Role>
+    }
+
+    class LoginResponse <<record>> {
+        token : String
+        user : UserResponse
+    }
+}
+
+User --> Role
+
+@enduml
