@@ -1,0 +1,62 @@
+############################
+# Maven / Spring Boot
+############################
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+############################
+# Logs
+############################
+*.log
+logs/
+
+############################
+# Arquivos temporários
+############################
+*.tmp
+*.swp
+*.bak
+*.orig
+
+############################
+# Sistema Operacional
+############################
+.DS_Store
+Thumbs.db
+
+############################
+# IDEs
+############################
+
+# IntelliJ
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# VS Code
+.vscode/
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+############################
+# Arquivos sensíveis
+############################
+application-local.properties
+application-dev.properties
+.env
+
+############################
+# Build front-end futuro
+############################
+node_modules/
+dist/
+build/
+
+############################
+# Arquivos compactados
+############################
+*.zip
