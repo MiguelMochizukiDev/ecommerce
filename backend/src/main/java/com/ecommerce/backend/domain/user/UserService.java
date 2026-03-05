@@ -1,24 +1,32 @@
 package com.ecommerce.backend.domain.user;
 
-import com.ecommerce.backend.domain.user.dto.RegisterRequest;
-import com.ecommerce.backend.domain.user.dto.UserResponse;
+import com.ecommerce.backend.domain.user.dto.*;
+import com.ecommerce.backend.infra.security.JwtService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
-
+public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + email));
+    }
 
     public UserResponse register(RegisterRequest request) {
-
         if (userRepository.existsByEmail(request.email())) {
             throw new IllegalArgumentException("Email já cadastrado: " + request.email());
         }
-
         if (request.cpf() != null && userRepository.existsByCpf(request.cpf())) {
             throw new IllegalArgumentException("CPF já cadastrado");
         }
@@ -31,7 +39,19 @@ public class UserService {
                 .phone(request.phone())
                 .build();
 
-        User saved = userRepository.save(user);
-        return UserResponse.from(saved);
+        return UserResponse.from(userRepository.save(user));
+    }
+
+    public LoginResponse login(LoginRequest request) {
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new BadCredentialsException("Credenciais inválidas"));
+
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+            throw new BadCredentialsException("Credenciais inválidas");
+        }
+
+        String token = jwtService.generateToken(user.getEmail());
+
+        return new LoginResponse(token, UserResponse.from(user));
     }
 }
