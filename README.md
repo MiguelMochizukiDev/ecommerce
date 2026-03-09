@@ -22,21 +22,19 @@ A RESTful backend for an e-commerce platform built with **Java 21** and **Spring
 
 ```
 src/main/java/com/ecommerce/backend/
-│
-├── config/                    # Security, JWT filter, password encoder
+├── BackendApplication.java
+├── config
 │   ├── JwtAuthFilter.java
 │   ├── PasswordConfig.java
 │   └── SecurityConfig.java
-│
-├── domain/                    # Business logic organized by domain
-│   ├── category/              # Product categories
-│   ├── product/               # Products and inventory
-│   ├── seller/                # Seller profiles and payment methods
-│   └── user/                  # Users, roles, auth
-│
-└── infra/
-    └── security/
-        └── JwtService.java    # Token generation and validation
+├── domain
+│   ├── cart
+│   ├── category
+│   ├── product
+│   ├── seller
+│   └── user
+└── infra
+    └── security
 ```
 
 Each domain package follows the same layered structure:
@@ -206,7 +204,7 @@ products
 [x] User registration and authentication (JWT)
 [x] Seller profile with payment methods
 [x] Products and categories
-[ ] Shopping cart
+[x] Shopping cart
 [ ] Orders and sub-orders (per seller)
 [ ] Product reviews
 [ ] Transaction history
