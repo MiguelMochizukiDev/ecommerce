@@ -1,0 +1,126 @@
+@startuml product-domain.puml
+skinparam classAttributeIconSize 0
+
+package "domain.category" {
+
+    class Category {
+        - id : Long
+        - name : String <<unique>>
+        - description : String
+    }
+
+    class CategoryRequest <<record>> {
+        + name : String
+        + description : String
+    }
+
+    class CategoryResponse <<record>> {
+        + id : Long
+        + name : String
+        + description : String
+        --
+        + {static} from(Category) : CategoryResponse
+    }
+
+    class CategoryService {
+        - categoryRepository : CategoryRepository
+        --
+        + create(CategoryRequest) : CategoryResponse
+        + listAll() : List<CategoryResponse>
+    }
+
+    interface CategoryRepository {
+        + existsByName(String) : boolean
+    }
+
+    class CategoryController {
+        - categoryService : CategoryService
+        --
+        + create(CategoryRequest) : ResponseEntity
+        + listAll() : ResponseEntity
+    }
+}
+
+package "domain.product" {
+
+    enum ProductStatus {
+        ACTIVE
+        PAUSED
+        OUT_OF_STOCK
+        DELETED
+    }
+
+    class Product {
+        - id : Long
+        - seller : SellerProfile
+        - category : Category
+        - name : String
+        - description : String
+        - price : BigDecimal
+        - stock : Integer
+        - status : ProductStatus
+        - createdAt : LocalDateTime
+        --
+        + prePersist() : void
+        + updateStock(quantity : int) : void
+    }
+
+    class ProductRequest <<record>> {
+        + name : String
+        + description : String
+        + price : BigDecimal
+        + stock : Integer
+        + categoryId : Long
+    }
+
+    class ProductResponse <<record>> {
+        + id : Long
+        + sellerId : Long
+        + sellerStoreName : String
+        + categoryName : String
+        + name : String
+        + description : String
+        + price : BigDecimal
+        + stock : Integer
+        + status : ProductStatus
+        + createdAt : LocalDateTime
+        --
+        + {static} from(Product) : ProductResponse
+    }
+
+    class ProductService {
+        - productRepository : ProductRepository
+        - sellerRepository : SellerRepository
+        - categoryRepository : CategoryRepository
+        --
+        + create(User, ProductRequest) : ProductResponse
+        + listActive() : List<ProductResponse>
+        + listMyProducts(User) : List<ProductResponse>
+        + getById(Long) : ProductResponse
+    }
+
+    interface ProductRepository {
+        + findByStatus(ProductStatus) : List<Product>
+        + findBySellerAndStatusNot(SellerProfile, ProductStatus) : List<Product>
+        + findByCategoryIdAndStatus(Long, ProductStatus) : List<Product>
+    }
+
+    class ProductController {
+        - productService : ProductService
+        --
+        + create(ProductRequest, Authentication) : ResponseEntity
+        + listActive() : ResponseEntity
+        + getById(Long) : ResponseEntity
+        + myProducts(Authentication) : ResponseEntity
+    }
+}
+
+Product --> ProductStatus
+Product --> Category
+CategoryController --> CategoryService
+CategoryService --> CategoryRepository
+ProductController --> ProductService
+ProductService --> ProductRepository
+ProductService --> CategoryRepository
+
+@enduml

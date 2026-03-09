@@ -1,0 +1,66 @@
+@startuml review-domain.puml
+skinparam classAttributeIconSize 0
+
+package "domain.review" {
+
+    class Review {
+        - id : Long
+        - subOrder : SubOrder
+        - reviewer : User
+        - product : Product
+        - seller : SellerProfile
+        - productRating : Integer
+        - sellerRating : Integer
+        - comment : String
+        - createdAt : LocalDateTime
+    }
+
+    class ReviewRequest <<record>> {
+        + productRating : Integer
+        + sellerRating : Integer
+        + comment : String
+    }
+
+    class ReviewResponse <<record>> {
+        + id : Long
+        + reviewerName : String
+        + productId : Long
+        + productRating : Integer
+        + sellerRating : Integer
+        + comment : String
+        + createdAt : LocalDateTime
+        --
+        + {static} from(Review) : ReviewResponse
+    }
+
+    class ReviewService {
+        - reviewRepository : ReviewRepository
+        - subOrderRepository : SubOrderRepository
+        --
+        + createReview(User, Long, ReviewRequest) : ReviewResponse
+        + getReviewsByProduct(Long) : List<ReviewResponse>
+        + getReviewsBySeller(Long) : List<ReviewResponse>
+    }
+
+    interface ReviewRepository {
+        + findByProduct(Product) : List<Review>
+        + findBySeller(SellerProfile) : List<Review>
+        + existsBySubOrder(SubOrder) : boolean
+    }
+
+    class ReviewController {
+        - reviewService : ReviewService
+        --
+        + createReview(Long, ReviewRequest, Authentication) : ResponseEntity
+        + getProductReviews(Long) : ResponseEntity
+        + getSellerReviews(Long) : ResponseEntity
+    }
+}
+
+Review --> SubOrder : gerada após DELIVERED >
+Review --> Product
+Review --> SellerProfile
+ReviewController --> ReviewService
+ReviewService --> ReviewRepository
+
+@enduml

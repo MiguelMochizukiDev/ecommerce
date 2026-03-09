@@ -1,0 +1,146 @@
+@startuml full-er.puml
+skinparam class {
+    BackgroundColor #FAFAFA
+    BorderColor #555
+    ArrowColor #333
+}
+
+entity users {
+    * id : BIGINT <<PK>>
+    --
+    * name : VARCHAR
+    * email : VARCHAR <<unique>>
+    * password : VARCHAR
+    cpf : VARCHAR <<unique>>
+    phone : VARCHAR
+    * active : BOOLEAN
+    * created_at : DATETIME
+}
+
+entity user_roles {
+    * user_id : BIGINT <<FK>>
+    * role : VARCHAR
+}
+
+entity seller_profiles {
+    * id : BIGINT <<PK>>
+    --
+    * user_id : BIGINT <<FK, unique>>
+    * store_name : VARCHAR
+    description : TEXT
+    pix_key : VARCHAR
+    * active : BOOLEAN
+    * created_at : DATETIME
+}
+
+entity seller_payment_methods {
+    * seller_id : BIGINT <<FK>>
+    * payment_method : VARCHAR
+}
+
+entity categories {
+    * id : BIGINT <<PK>>
+    --
+    * name : VARCHAR <<unique>>
+    description : TEXT
+}
+
+entity products {
+    * id : BIGINT <<PK>>
+    --
+    * seller_id : BIGINT <<FK>>
+    * category_id : BIGINT <<FK>>
+    * name : VARCHAR
+    description : TEXT
+    * price : DECIMAL(10,2)
+    * stock : INT
+    * status : VARCHAR
+    * created_at : DATETIME
+}
+
+entity carts {
+    * id : BIGINT <<PK>>
+    --
+    * user_id : BIGINT <<FK, unique>>
+    updated_at : DATETIME
+}
+
+entity cart_items {
+    * id : BIGINT <<PK>>
+    --
+    * cart_id : BIGINT <<FK>>
+    * product_id : BIGINT <<FK>>
+    * quantity : INT
+    * price_snapshot : DECIMAL(10,2)
+}
+
+entity orders {
+    * id : BIGINT <<PK>>
+    --
+    * buyer_id : BIGINT <<FK>>
+    * delivery_address : VARCHAR
+    * status : VARCHAR
+    * total : DECIMAL(10,2)
+    * created_at : DATETIME
+}
+
+entity sub_orders {
+    * id : BIGINT <<PK>>
+    --
+    * order_id : BIGINT <<FK>>
+    * seller_id : BIGINT <<FK>>
+    * payment_method : VARCHAR
+    * status : VARCHAR
+    * subtotal : DECIMAL(10,2)
+}
+
+entity sub_order_items {
+    * id : BIGINT <<PK>>
+    --
+    * sub_order_id : BIGINT <<FK>>
+    * product_id : BIGINT <<FK>>
+    * quantity : INT
+    * price_snapshot : DECIMAL(10,2)
+}
+
+entity sub_order_status_history {
+    * id : BIGINT <<PK>>
+    --
+    * sub_order_id : BIGINT <<FK>>
+    * status : VARCHAR
+    * changed_at : DATETIME
+    note : TEXT
+}
+
+entity reviews {
+    * id : BIGINT <<PK>>
+    --
+    * sub_order_id : BIGINT <<FK, unique>>
+    * reviewer_id : BIGINT <<FK>>
+    * product_id : BIGINT <<FK>>
+    * seller_id : BIGINT <<FK>>
+    * product_rating : INT
+    * seller_rating : INT
+    comment : TEXT
+    * created_at : DATETIME
+}
+
+users ||--o{ user_roles : "tem"
+users ||--o| seller_profiles : "pode ter"
+users ||--o| carts : "tem"
+users ||--o{ orders : "faz"
+seller_profiles ||--o{ seller_payment_methods : "aceita"
+seller_profiles ||--o{ products : "cadastra"
+categories ||--o{ products : "classifica"
+carts ||--o{ cart_items : "contém"
+products ||--o{ cart_items : "aparece em"
+orders ||--o{ sub_orders : "contém"
+seller_profiles ||--o{ sub_orders : "recebe"
+sub_orders ||--o{ sub_order_items : "contém"
+sub_orders ||--o{ sub_order_status_history : "registra"
+products ||--o{ sub_order_items : "vendido em"
+sub_orders ||--|| reviews : "gera"
+products ||--o{ reviews : "avaliado em"
+seller_profiles ||--o{ reviews : "avaliado em"
+
+@enduml

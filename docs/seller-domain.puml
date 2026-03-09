@@ -1,5 +1,4 @@
 @startuml seller-domain.puml
-
 skinparam classAttributeIconSize 0
 
 package "domain.seller" {
@@ -12,30 +11,61 @@ package "domain.seller" {
     }
 
     class SellerProfile {
-        id : Long
-        storeName : String
-        description : String
-        pixKey : String
-        paymentMethods : Set<PaymentMethod>
-        active : boolean
-        createdAt : LocalDateTime
+        - id : Long
+        - user : User
+        - storeName : String
+        - description : String
+        - pixKey : String
+        - paymentMethods : Set<PaymentMethod>
+        - active : boolean
+        - createdAt : LocalDateTime
+        --
+        + prePersist() : void
     }
 
     class SellerRequest <<record>> {
-        storeName : String
-        description : String
-        paymentMethods : Set<PaymentMethod>
-        pixKey : String
+        + storeName : String
+        + description : String
+        + paymentMethods : Set<PaymentMethod>
+        + pixKey : String
     }
 
     class SellerResponse <<record>> {
-        id : Long
-        storeName : String
-        paymentMethods : Set<PaymentMethod>
-        active : boolean
+        + id : Long
+        + userId : Long
+        + storeName : String
+        + description : String
+        + pixKey : String
+        + paymentMethods : Set<PaymentMethod>
+        + active : boolean
+        + createdAt : LocalDateTime
+        --
+        + {static} from(SellerProfile) : SellerResponse
+    }
+
+    class SellerService {
+        - sellerRepository : SellerRepository
+        - userRepository : UserRepository
+        --
+        + activateSellerProfile(User, SellerRequest) : SellerResponse
+        + getMySellerProfile(User) : SellerResponse
+    }
+
+    interface SellerRepository {
+        + findByUser(User) : Optional<SellerProfile>
+        + existsByUser(User) : boolean
+    }
+
+    class SellerController {
+        - sellerService : SellerService
+        --
+        + activate(SellerRequest, Authentication) : ResponseEntity
+        + myProfile(Authentication) : ResponseEntity
     }
 }
 
-SellerProfile --> PaymentMethod
+SellerProfile "1" *-- "many" PaymentMethod : aceita >
+SellerController --> SellerService
+SellerService --> SellerRepository
 
 @enduml
