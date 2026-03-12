@@ -1,0 +1,24 @@
+@startuml Product Catalog
+
+top to bottom direction
+skinparam linetype ortho
+
+class SellerProfile
+
+class Category {
+  id
+  name
+}
+
+class Product {
+  id
+  name
+  price
+  stock
+  status
+}
+
+Product "*" --> "1" Category
+Product "*" --> "1" SellerProfile : sold by
+
+@enduml

@@ -1,0 +1,18 @@
+@startuml E-commerce System Overview
+
+skinparam linetype ortho
+skinparam packageStyle rectangle
+
+package "User Management" as UM
+package "Product Catalog" as PC
+package "Shopping Cart" as SC
+package "Order System" as OS
+package "Review System" as RS
+
+UM --> PC : sellers create products
+UM --> SC : users own carts
+SC --> OS : checkout
+OS --> RS : purchase enables review
+PC --> SC : products added to cart
+
+@enduml

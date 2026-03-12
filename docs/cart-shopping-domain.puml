@@ -1,0 +1,23 @@
+@startuml Shopping Cart
+
+top to bottom direction
+skinparam linetype ortho
+
+class User
+class Product
+
+class Cart {
+  id
+}
+
+class CartItem {
+  id
+  quantity
+  priceSnapshot
+}
+
+User "1" -- "0..1" Cart
+Cart "1" *-- "*" CartItem
+CartItem "*" --> "1" Product
+
+@enduml
