@@ -2,6 +2,18 @@
 
 A RESTful backend for an e-commerce platform built with **Java 21** and **Spring Boot 3.5**, featuring JWT authentication, role-based access control, and a domain-driven package structure.
 
+## Features
+
+- ✅ **JWT Authentication** — Stateless token-based auth
+- ✅ **Role-based Authorization** — BUYER, SELLER, ADMIN roles
+- ✅ **Multi-vendor Support** — Each seller manages their products
+- ✅ **Shopping Cart** — Price divergence detection
+- ✅ **Multi-vendor Orders** — Orders split by seller automatically
+- ✅ **Payment Methods** — Cash, Debit, Credit, PIX per seller
+- ✅ **Product Reviews** — Rating system for delivered orders
+- ✅ **Global Exception Handling** — Standardized error responses
+- ✅ **CORS Configuration** — Ready for frontend integration
+
 ---
 
 ## Tech Stack
@@ -153,6 +165,34 @@ TOKEN=$(curl -s -X POST http://localhost:8080/api/users/login \
 | GET | `/{id}` | Public | Get product by ID |
 | GET | `/my` | Required | List own products |
 
+### Shopping Cart — `/api/cart`
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/` | Required | Get user's cart |
+| POST | `/items` | Required | Add item to cart |
+| PUT | `/items/{itemId}` | Required | Update item quantity |
+| DELETE | `/items/{itemId}` | Required | Remove item from cart |
+| DELETE | `/` | Required | Clear entire cart |
+
+### Orders — `/api/orders`
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/` | Required | Create order from cart |
+| GET | `/` | Required | Get user's orders |
+| GET | `/{orderId}` | Required | Get order by ID |
+| GET | `/sales` | Required | Get seller's sales (sub-orders) |
+| PUT | `/sub-orders/{subOrderId}/status` | Required | Update sub-order status (seller only) |
+
+### Reviews — `/api/reviews`
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/sub-orders/{subOrderId}` | Required | Create review for delivered order |
+| GET | `/products/{productId}` | Public | Get reviews for a product |
+| GET | `/sellers/{sellerId}` | Public | Get reviews for a seller |
+
 ---
 
 ## User Roles
@@ -194,6 +234,19 @@ categories
 products
  ├── seller_profiles
  └── categories
+
+carts
+ └── cart_items
+
+orders
+ └── sub_orders
+      ├── sub_order_items
+      └── sub_order_status_history
+
+reviews
+ ├── sub_orders (one-to-one)
+ ├── products
+ └── seller_profiles
 ```
 
 ---
@@ -205,9 +258,11 @@ products
 [x] Seller profile with payment methods
 [x] Products and categories
 [x] Shopping cart
-[ ] Orders and sub-orders (per seller)
-[ ] Product reviews
-[ ] Transaction history
+[x] Orders and sub-orders (per seller)
+[x] Product reviews
+[ ] Transaction history enhancements
+[ ] Product image upload
+[ ] Search and filters
 ```
 
 ---
@@ -231,4 +286,4 @@ jwt.secret=${JWT_SECRET}               # Min 32 characters
 jwt.expiration=86400000                # 24 hours in milliseconds
 ```
 
-> Never commit real credentials to version control. Add `application.properties` to `.gitignore` if using hardcoded values.
+> Export them to your environment so you can run the back-end.

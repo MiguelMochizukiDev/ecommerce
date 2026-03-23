@@ -1,0 +1,158 @@
+@startuml E-commerce ERD
+
+!define TABLE entity
+!define PK <b><color:red>PK</color></b>
+!define FK <color:blue>FK</color>
+
+skinparam linetype ortho
+
+' Users and Authentication
+TABLE users {
+  PK id: BIGINT
+  --
+  name: VARCHAR
+  email: VARCHAR(unique)
+  password: VARCHAR
+  cpf: VARCHAR
+  phone: VARCHAR
+  active: BOOLEAN
+  created_at: TIMESTAMP
+}
+
+TABLE user_roles {
+  FK user_id: BIGINT
+  role: VARCHAR(ENUM)
+}
+
+TABLE seller_profiles {
+  PK id: BIGINT
+  --
+  FK user_id: BIGINT(unique)
+  store_name: VARCHAR
+  description: TEXT
+  pix_key: VARCHAR
+  active: BOOLEAN
+  created_at: TIMESTAMP
+}
+
+TABLE seller_payment_methods {
+  FK seller_id: BIGINT
+  payment_method: VARCHAR(ENUM)
+}
+
+' Product Catalog
+TABLE categories {
+  PK id: BIGINT
+  --
+  name: VARCHAR(unique)
+  description: TEXT
+}
+
+TABLE products {
+  PK id: BIGINT
+  --
+  FK seller_id: BIGINT
+  FK category_id: BIGINT
+  name: VARCHAR
+  description: TEXT
+  price: DECIMAL(10,2)
+  stock: INTEGER
+  status: VARCHAR(ENUM)
+  created_at: TIMESTAMP
+}
+
+' Shopping Cart
+TABLE carts {
+  PK id: BIGINT
+  --
+  FK user_id: BIGINT(unique)
+  updated_at: TIMESTAMP
+}
+
+TABLE cart_items {
+  PK id: BIGINT
+  --
+  FK cart_id: BIGINT
+  FK product_id: BIGINT
+  quantity: INTEGER
+  price_snapshot: DECIMAL(10,2)
+}
+
+' Orders
+TABLE orders {
+  PK id: BIGINT
+  --
+  FK buyer_id: BIGINT
+  delivery_address: VARCHAR
+  status: VARCHAR(ENUM)
+  total: DECIMAL(10,2)
+  created_at: TIMESTAMP
+}
+
+TABLE sub_orders {
+  PK id: BIGINT
+  --
+  FK order_id: BIGINT
+  FK seller_id: BIGINT
+  payment_method: VARCHAR(ENUM)
+  status: VARCHAR(ENUM)
+  subtotal: DECIMAL(10,2)
+}
+
+TABLE sub_order_items {
+  PK id: BIGINT
+  --
+  FK sub_order_id: BIGINT
+  FK product_id: BIGINT
+  quantity: INTEGER
+  price_snapshot: DECIMAL(10,2)
+}
+
+TABLE sub_order_status_history {
+  PK id: BIGINT
+  --
+  FK sub_order_id: BIGINT
+  previous_status: VARCHAR(ENUM)
+  new_status: VARCHAR(ENUM)
+  changed_at: TIMESTAMP
+}
+
+' Reviews
+TABLE reviews {
+  PK id: BIGINT
+  --
+  FK sub_order_id: BIGINT(unique)
+  FK reviewer_id: BIGINT
+  FK product_id: BIGINT
+  FK seller_id: BIGINT
+  product_rating: INTEGER(1-5)
+  seller_rating: INTEGER(1-5)
+  comment: TEXT
+  created_at: TIMESTAMP
+}
+
+' Relationships
+users ||--o{ user_roles
+users ||--o| seller_profiles
+seller_profiles ||--o{ seller_payment_methods
+
+categories ||--o{ products
+seller_profiles ||--o{ products
+
+users ||--o| carts
+carts ||--o{ cart_items
+products ||--o{ cart_items
+
+users ||--o{ orders
+orders ||--o{ sub_orders
+seller_profiles ||--o{ sub_orders
+sub_orders ||--o{ sub_order_items
+sub_orders ||--o{ sub_order_status_history
+products ||--o{ sub_order_items
+
+users ||--o{ reviews
+products ||--o{ reviews
+seller_profiles ||--o{ reviews
+sub_orders ||--|| reviews
+
+@enduml

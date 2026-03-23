@@ -1,0 +1,20 @@
+@startuml User Domain
+
+top to bottom direction
+skinparam linetype ortho
+
+class User {
+  id
+  email
+  roles
+}
+
+class SellerProfile {
+  id
+  storeName
+  paymentMethods
+}
+
+User "1" -- "0..1" SellerProfile : can be seller
+
+@enduml

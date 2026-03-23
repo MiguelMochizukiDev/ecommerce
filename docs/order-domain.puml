@@ -1,127 +1,36 @@
-@startuml order-domain.puml
-skinparam classAttributeIconSize 0
+@startuml Order System
 
-package "domain.order" {
+top to bottom direction
+skinparam linetype ortho
 
-    enum OrderStatus {
-        PENDING
-        CONFIRMED
-        CANCELLED
-    }
+class User
+class Product
+class SellerProfile
 
-    enum SubOrderStatus {
-        AWAITING_PAYMENT
-        PAID
-        SHIPPED
-        DELIVERED
-        CANCELLED
-        REFUNDED
-    }
-
-    class Order {
-        - id : Long
-        - buyer : User
-        - subOrders : List<SubOrder>
-        - deliveryAddress : String
-        - status : OrderStatus
-        - total : BigDecimal
-        - createdAt : LocalDateTime
-    }
-
-    class SubOrder {
-        - id : Long
-        - order : Order
-        - seller : SellerProfile
-        - items : List<SubOrderItem>
-        - paymentMethod : PaymentMethod
-        - status : SubOrderStatus
-        - subtotal : BigDecimal
-        - statusHistory : List<SubOrderStatusHistory>
-    }
-
-    class SubOrderItem {
-        - id : Long
-        - subOrder : SubOrder
-        - product : Product
-        - quantity : Integer
-        - priceSnapshot : BigDecimal
-    }
-
-    class SubOrderStatusHistory {
-        - id : Long
-        - subOrder : SubOrder
-        - status : SubOrderStatus
-        - changedAt : LocalDateTime
-        - note : String
-    }
-
-    class CreateOrderRequest <<record>> {
-        + deliveryAddress : String
-        + paymentSelections : List<PaymentSelection>
-    }
-
-    class PaymentSelection <<record>> {
-        + sellerId : Long
-        + paymentMethod : PaymentMethod
-    }
-
-    class OrderResponse <<record>> {
-        + id : Long
-        + status : OrderStatus
-        + total : BigDecimal
-        + subOrders : List<SubOrderResponse>
-        + createdAt : LocalDateTime
-        --
-        + {static} from(Order) : OrderResponse
-    }
-
-    class SubOrderResponse <<record>> {
-        + id : Long
-        + sellerStoreName : String
-        + paymentMethod : PaymentMethod
-        + status : SubOrderStatus
-        + subtotal : BigDecimal
-        + items : List<SubOrderItemResponse>
-    }
-
-    class OrderService {
-        - orderRepository : OrderRepository
-        - subOrderRepository : SubOrderRepository
-        - cartRepository : CartRepository
-        - productRepository : ProductRepository
-        --
-        + createFromCart(User, CreateOrderRequest) : OrderResponse
-        + getMyOrders(User) : List<OrderResponse>
-        + getOrderById(User, Long) : OrderResponse
-        + updateSubOrderStatus(Long, SubOrderStatus) : SubOrderResponse
-    }
-
-    interface OrderRepository {
-        + findByBuyerOrderByCreatedAtDesc(User) : List<Order>
-    }
-
-    interface SubOrderRepository {
-        + findBySellerOrderByCreatedAtDesc(SellerProfile) : List<SubOrder>
-    }
-
-    class OrderController {
-        - orderService : OrderService
-        --
-        + createOrder(CreateOrderRequest, Authentication) : ResponseEntity
-        + myOrders(Authentication) : ResponseEntity
-        + getOrder(Long, Authentication) : ResponseEntity
-        + updateStatus(Long, SubOrderStatus, Authentication) : ResponseEntity
-    }
+class Order {
+  id
+  deliveryAddress
+  status
+  total
 }
 
-Order "1" *-- "many" SubOrder : contém >
-Order --> OrderStatus
-SubOrder "1" *-- "many" SubOrderItem : contém >
-SubOrder "1" *-- "many" SubOrderStatusHistory : registra >
-SubOrder --> SubOrderStatus
-SubOrderItem --> Product
-OrderController --> OrderService
-OrderService --> OrderRepository
-OrderService --> SubOrderRepository
+class SubOrder {
+  id
+  paymentMethod
+  status
+  subtotal
+}
+
+class SubOrderItem {
+  id
+  quantity
+  priceSnapshot
+}
+
+User "1" -- "*" Order : buyer
+Order "1" *-- "1..*" SubOrder : split by seller
+SubOrder "*" --> "1" SellerProfile
+SubOrder "1" *-- "*" SubOrderItem
+SubOrderItem "*" --> "1" Product
 
 @enduml

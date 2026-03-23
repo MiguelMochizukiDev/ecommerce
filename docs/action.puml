@@ -1,0 +1,56 @@
+@startuml Order Process Flow
+
+skinparam activityBackgroundColor #WhiteSmoke
+skinparam activityBorderColor #Black
+skinparam activityDiamondBackgroundColor #LightYellow
+
+title E-commerce Order Process
+
+start
+
+:User browses products;
+
+:Add products to **Cart**;
+note right
+  Products can be from
+  multiple sellers
+end note
+
+:User proceeds to checkout;
+
+:Create **Order** with delivery address;
+
+:System splits Order into **SubOrders**
+(one per seller);
+note right
+  Example: 3 products from
+  2 sellers = 2 SubOrders
+end note
+
+fork
+  :SubOrder 1\n(Seller A);
+  :Select payment method;
+  :Process payment;
+  :Ship items;
+  :Deliver;
+fork again
+  :SubOrder 2\n(Seller B);
+  :Select payment method;
+  :Process payment;
+  :Ship items;
+  :Deliver;
+end fork
+
+:All SubOrders delivered;
+
+:User can write **Review**
+for each SubOrder;
+note right
+  Review rates both:
+  - Product (1-5 stars)
+  - Seller (1-5 stars)
+end note
+
+stop
+
+@enduml
