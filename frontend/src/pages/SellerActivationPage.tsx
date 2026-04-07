@@ -28,8 +28,21 @@ const SellerActivationPage = () => {
       navigate('/seller/dashboard');
       window.location.reload();
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erro ao ativar.');
-    } finally { setLoading(false); }
+      if (!err.response) {
+        setError('Não foi possível conectar ao servidor. Verifique sua conexão.');
+        return;
+      }
+      const data = err.response.data;
+      if (data && typeof data === 'object' && !data.message) {
+        // Trata erro de validação que vem como Map<String, String>
+        const messages = Object.values(data).join(' • ');
+        setError(messages || 'Dados inválidos.');
+      } else {
+        setError(data?.message || 'Erro ao ativar.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

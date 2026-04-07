@@ -47,8 +47,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     try {
       const res = await api.get('/users/me');
+      api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
       setUser(res.data);
-      setToken(storedToken);
     } catch {
       localStorage.removeItem('token');
       setToken(null);
@@ -67,11 +67,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const newToken = res.data.token;
     localStorage.setItem('token', newToken);
     setToken(newToken);
-    // Load user data
-    const userRes = await api.get('/users/me', {
-      headers: { Authorization: `Bearer ${newToken}` }
-    });
-    setUser(userRes.data);
+    setUser(res.data.user);
   };
 
   const register = async (data: RegisterData) => {

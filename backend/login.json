@@ -1,0 +1,1 @@
+{"token":"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZUBlbWFpbC5jb20iLCJpYXQiOjE3NzU1MzQzNjksImV4cCI6MTc3NTYyMDc2OX0.HFX9CXcF-wknRewuSDveJCRyoABdTi62-ruk7MbXaWk","user":{"id":2,"name":"Teste User","email":"teste@email.com","cpf":"99988877766","phone":"11999999999","roles":["BUYER"],"active":true,"createdAt":"2026-04-07T00:23:53.960605"}}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Package, ChevronDown, ChevronUp, Star } from 'lucide-react';
+import { useToast } from '../contexts/ToastContext';
 import api from '../services/api';
 
 interface SubOrderItem {
@@ -56,7 +57,13 @@ const MyOrdersPage = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<number | null>(null);
-  const [reviewForm, setReviewForm] = useState<{ subOrderId: number; productRating: number; sellerRating: number; comment: string } | null>(null);
+  const [reviewForm, setReviewForm] = useState<{
+    subOrderId: number;
+    productRating: number;
+    sellerRating: number;
+    comment: string;
+  } | null>(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -64,7 +71,7 @@ const MyOrdersPage = () => {
         const res = await api.get('/orders');
         setOrders(res.data);
       } catch {
-        // handle error
+        /* handle error */
       } finally {
         setLoading(false);
       }
@@ -78,19 +85,19 @@ const MyOrdersPage = () => {
       await api.post(`/reviews/sub-orders/${reviewForm.subOrderId}`, {
         productRating: reviewForm.productRating,
         sellerRating: reviewForm.sellerRating,
-        comment: reviewForm.comment
+        comment: reviewForm.comment,
       });
       setReviewForm(null);
-      alert('Avaliação enviada com sucesso!');
+      showToast('Avaliação enviada com sucesso!', 'success');
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Erro ao enviar avaliação');
+      showToast(err.response?.data?.message || 'Erro ao enviar avaliação', 'error');
     }
   };
 
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[40vh]">
-        <div className="w-10 h-10 border-4 border-gray-200 border-t-[#008aa1] rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-gray-200 border-t-[#008aa1] rounded-full animate-spin" />
       </div>
     );
   }
@@ -108,8 +115,10 @@ const MyOrdersPage = () => {
         <div className="space-y-4">
           {orders.map(order => (
             <div key={order.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-              <button onClick={() => setExpanded(expanded === order.id ? null : order.id)}
-                className="w-full p-5 flex items-center justify-between hover:bg-gray-50 transition-colors">
+              <button
+                onClick={() => setExpanded(expanded === order.id ? null : order.id)}
+                className="w-full p-5 flex items-center justify-between hover:bg-gray-50 transition-colors"
+              >
                 <div className="flex items-center gap-6 text-sm">
                   <span className="font-bold text-gray-800">Pedido #{order.id}</span>
                   <span className="text-gray-500">{new Date(order.createdAt).toLocaleDateString('pt-BR')}</span>
@@ -119,7 +128,10 @@ const MyOrdersPage = () => {
                 </div>
                 <div className="flex items-center gap-4">
                   <span className="font-bold text-gray-900">R$ {order.total.toFixed(2)}</span>
-                  {expanded === order.id ? <ChevronUp size={20} className="text-gray-400" /> : <ChevronDown size={20} className="text-gray-400" />}
+                  {expanded === order.id
+                    ? <ChevronUp size={20} className="text-gray-400" />
+                    : <ChevronDown size={20} className="text-gray-400" />
+                  }
                 </div>
               </button>
 
@@ -159,36 +171,53 @@ const MyOrdersPage = () => {
                                 <div>
                                   <label className="text-xs text-gray-500 block mb-1">Produto</label>
                                   <div className="flex gap-1">
-                                    {[1,2,3,4,5].map(s => (
-                                      <Star key={s} size={20}
+                                    {[1, 2, 3, 4, 5].map(s => (
+                                      <Star
+                                        key={s}
+                                        size={20}
                                         className={`cursor-pointer ${s <= reviewForm.productRating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
-                                        onClick={() => setReviewForm({ ...reviewForm, productRating: s })} />
+                                        onClick={() => setReviewForm({ ...reviewForm, productRating: s })}
+                                      />
                                     ))}
                                   </div>
                                 </div>
                                 <div>
                                   <label className="text-xs text-gray-500 block mb-1">Vendedor</label>
                                   <div className="flex gap-1">
-                                    {[1,2,3,4,5].map(s => (
-                                      <Star key={s} size={20}
+                                    {[1, 2, 3, 4, 5].map(s => (
+                                      <Star
+                                        key={s}
+                                        size={20}
                                         className={`cursor-pointer ${s <= reviewForm.sellerRating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
-                                        onClick={() => setReviewForm({ ...reviewForm, sellerRating: s })} />
+                                        onClick={() => setReviewForm({ ...reviewForm, sellerRating: s })}
+                                      />
                                     ))}
                                   </div>
                                 </div>
                               </div>
-                              <textarea value={reviewForm.comment}
-                                onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
+                              <textarea
+                                value={reviewForm.comment}
+                                onChange={e => setReviewForm({ ...reviewForm, comment: e.target.value })}
                                 placeholder="Deixe um comentário (opcional)"
-                                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm resize-none h-20 focus:outline-none focus:border-[#008aa1]" />
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm resize-none h-20 focus:outline-none focus:border-[#008aa1]"
+                              />
                               <div className="flex gap-2">
-                                <button onClick={submitReview} className="bg-[#008aa1] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#00768a]">Enviar Avaliação</button>
-                                <button onClick={() => setReviewForm(null)} className="text-gray-500 text-sm hover:text-gray-700">Cancelar</button>
+                                <button
+                                  onClick={submitReview}
+                                  className="bg-[#008aa1] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#00768a]"
+                                >
+                                  Enviar Avaliação
+                                </button>
+                                <button onClick={() => setReviewForm(null)} className="text-gray-500 text-sm hover:text-gray-700">
+                                  Cancelar
+                                </button>
                               </div>
                             </div>
                           ) : (
-                            <button onClick={() => setReviewForm({ subOrderId: sub.id, productRating: 5, sellerRating: 5, comment: '' })}
-                              className="text-sm text-[#008aa1] hover:underline font-medium flex items-center gap-1">
+                            <button
+                              onClick={() => setReviewForm({ subOrderId: sub.id, productRating: 5, sellerRating: 5, comment: '' })}
+                              className="text-sm text-[#008aa1] hover:underline font-medium flex items-center gap-1"
+                            >
                               <Star size={14} /> Avaliar este pedido
                             </button>
                           )}

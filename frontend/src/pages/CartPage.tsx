@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, Plus, Minus, ShoppingBag, AlertTriangle } from 'lucide-react';
+import { useCartCount } from '../contexts/CartCountContext';
 import api from '../services/api';
 
 interface CartItem {
@@ -25,6 +26,7 @@ interface CartData {
 const CartPage = () => {
   const [cart, setCart] = useState<CartData | null>(null);
   const [loading, setLoading] = useState(true);
+  const { refresh } = useCartCount();
   const navigate = useNavigate();
 
   const fetchCart = async () => {
@@ -44,6 +46,7 @@ const CartPage = () => {
     try {
       const res = await api.put(`/cart/items/${itemId}`, { quantity });
       setCart(res.data);
+      refresh();
     } catch (err: any) {
       alert(err.response?.data?.message || 'Erro ao atualizar quantidade');
     }
@@ -53,6 +56,7 @@ const CartPage = () => {
     try {
       const res = await api.delete(`/cart/items/${itemId}`);
       setCart(res.data);
+      refresh();
     } catch {
       alert('Erro ao remover item');
     }
@@ -62,6 +66,7 @@ const CartPage = () => {
     try {
       await api.delete('/cart');
       setCart(null);
+      refresh();
     } catch {
       alert('Erro ao limpar carrinho');
     }
@@ -70,7 +75,7 @@ const CartPage = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[40vh]">
-        <div className="w-10 h-10 border-4 border-gray-200 border-t-[#008aa1] rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-gray-200 border-t-[#008aa1] rounded-full animate-spin" />
       </div>
     );
   }
@@ -95,7 +100,9 @@ const CartPage = () => {
       {cart.hasAnyDivergence && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3">
           <AlertTriangle className="text-amber-500" size={20} />
-          <p className="text-sm text-amber-700">Alguns preços mudaram desde que você adicionou os itens. Revise antes de finalizar.</p>
+          <p className="text-sm text-amber-700">
+            Alguns preços mudaram desde que você adicionou os itens. Revise antes de finalizar.
+          </p>
         </div>
       )}
 
@@ -117,23 +124,27 @@ const CartPage = () => {
 
                 {item.hasDivergence && (
                   <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
-                    <AlertTriangle size={12} /> Preço alterado: era R$ {item.priceSnapshot.toFixed(2)}, agora R$ {item.currentPrice.toFixed(2)}
+                    <AlertTriangle size={12} />
+                    Preço alterado: era R$ {item.priceSnapshot.toFixed(2)}, agora R$ {item.currentPrice.toFixed(2)}
                   </p>
                 )}
 
                 <div className="flex items-center justify-between mt-4">
                   <div className="flex items-center gap-2">
-                    <button onClick={() => updateQty(item.id, Math.max(1, item.quantity - 1))}
-                      className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded-lg hover:bg-gray-50">
+                    <button
+                      onClick={() => updateQty(item.id, Math.max(1, item.quantity - 1))}
+                      className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded-lg hover:bg-gray-50"
+                    >
                       <Minus size={14} />
                     </button>
                     <span className="text-sm font-medium w-8 text-center">{item.quantity}</span>
-                    <button onClick={() => updateQty(item.id, item.quantity + 1)}
-                      className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded-lg hover:bg-gray-50">
+                    <button
+                      onClick={() => updateQty(item.id, item.quantity + 1)}
+                      className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded-lg hover:bg-gray-50"
+                    >
                       <Plus size={14} />
                     </button>
-                    <button onClick={() => removeItem(item.id)}
-                      className="ml-4 text-red-400 hover:text-red-600 transition-colors">
+                    <button onClick={() => removeItem(item.id)} className="ml-4 text-red-400 hover:text-red-600 transition-colors">
                       <Trash2 size={16} />
                     </button>
                   </div>
@@ -144,7 +155,7 @@ const CartPage = () => {
           ))}
         </div>
 
-        {/* Summary */}
+        {/* Resumo */}
         <div className="bg-white border border-gray-200 rounded-xl p-6 h-max sticky top-8">
           <h3 className="font-bold text-gray-800 mb-4">Resumo do Pedido</h3>
           <div className="space-y-2 text-sm text-gray-600 mb-4">
@@ -159,12 +170,16 @@ const CartPage = () => {
               <span>R$ {cart.total.toFixed(2)}</span>
             </div>
           </div>
-          <button onClick={() => navigate('/checkout')}
-            className="w-full bg-[#008aa1] hover:bg-[#00768a] text-white py-3 rounded-xl font-medium transition-colors">
+          <button
+            onClick={() => navigate('/checkout')}
+            className="w-full bg-[#008aa1] hover:bg-[#00768a] text-white py-3 rounded-xl font-medium transition-colors"
+          >
             Finalizar Compra
           </button>
-          <button onClick={clearCart}
-            className="w-full text-red-500 hover:text-red-700 text-sm mt-3 py-2 transition-colors">
+          <button
+            onClick={clearCart}
+            className="w-full text-red-500 hover:text-red-700 text-sm mt-3 py-2 transition-colors"
+          >
             Limpar carrinho
           </button>
         </div>

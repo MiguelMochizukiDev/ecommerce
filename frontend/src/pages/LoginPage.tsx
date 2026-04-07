@@ -18,8 +18,12 @@ const LoginPage = () => {
     try {
       await login(email, password);
       navigate('/');
-    } catch {
-      setError('Email ou senha incorretos.');
+    } catch (err: any) {
+      if (!err.response) {
+        setError('Não foi possível conectar ao servidor. Verifique se o backend está rodando.');
+      } else {
+        setError(err.response?.data?.message || 'Email ou senha incorretos.');
+      }
     } finally {
       setLoading(false);
     }

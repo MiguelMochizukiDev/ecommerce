@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Star, Store, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useCartCount } from '../contexts/CartCountContext';
+import { useToast } from '../contexts/ToastContext';
 import api from '../services/api';
 
 interface Product {
@@ -29,11 +31,12 @@ const ProductPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const { refresh } = useCartCount();
+  const { showToast } = useToast();
   const [product, setProduct] = useState<Product | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
-  const [message, setMessage] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -59,27 +62,26 @@ const ProductPage = () => {
       return;
     }
     setAdding(true);
-    setMessage('');
     try {
       await api.post('/cart/items', { productId: product?.id, quantity: 1 });
-      setMessage('✅ Adicionado ao carrinho!');
+      refresh(); // atualiza badge do carrinho no header
+      showToast('Produto adicionado ao carrinho!', 'success');
     } catch (err: any) {
-      setMessage(err.response?.data?.message || '❌ Erro ao adicionar ao carrinho');
+      showToast(err.response?.data?.message || 'Erro ao adicionar ao carrinho', 'error');
     } finally {
       setAdding(false);
     }
   };
 
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
+  const renderStars = (rating: number) =>
+    Array.from({ length: 5 }, (_, i) => (
       <Star key={i} size={16} className={i < rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'} />
     ));
-  };
 
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[40vh]">
-        <div className="w-10 h-10 border-4 border-gray-200 border-t-[#008aa1] rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-gray-200 border-t-[#008aa1] rounded-full animate-spin" />
       </div>
     );
   }
@@ -100,7 +102,7 @@ const ProductPage = () => {
 
       <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
-          {/* Image */}
+          {/* Imagem */}
           <div className="bg-gray-50 flex items-center justify-center p-12">
             <img
               src={`https://picsum.photos/seed/${product.id}/500/500`}
@@ -127,7 +129,9 @@ const ProductPage = () => {
 
             <div className="flex items-center gap-2 mb-2">
               <Store size={16} className="text-gray-400" />
-              <span className="text-sm text-gray-600">Vendido por <strong className="text-[#008aa1]">{product.sellerStoreName}</strong></span>
+              <span className="text-sm text-gray-600">
+                Vendido por <strong className="text-[#008aa1]">{product.sellerStoreName}</strong>
+              </span>
             </div>
 
             <p className="text-sm text-gray-500 mb-6">
@@ -145,10 +149,6 @@ const ProductPage = () => {
                 <ShoppingCart size={20} />
                 {adding ? 'Adicionando...' : product.stock > 0 ? 'Adicionar ao Carrinho' : 'Produto Esgotado'}
               </button>
-
-              {message && (
-                <p className="text-sm text-center mt-3 text-gray-600">{message}</p>
-              )}
             </div>
           </div>
         </div>
