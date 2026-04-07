@@ -2,7 +2,7 @@
 # BISHA Store — Inicia backend e frontend juntos
 
 export DB_USER="${DB_USER:-bisha}"
-export DB_PASSWORD="${DB_PASSWORD:-bisha1234}"
+export DB_PASSWORD="${DB_PASSWORD:-BiSha@1234}"
 export JWT_SECRET="${JWT_SECRET:-bishastorejwtsecretkey2026xxxxxxxxxxx}"
 
 # Salva o diretório raiz do projeto antes de qualquer cd
